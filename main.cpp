@@ -1,10 +1,3 @@
-/***********************************************************************
-*
-* Copyright (c) 2021-2022 Barbara Geller and Ansel Sermersheim
-* Modified by Christian Schmidt 2022 and redistributed
-* 
-************************/
-
 #include <QtCore>
 #include <QtGui>
 
