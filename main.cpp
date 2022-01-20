@@ -16,6 +16,8 @@
 #include <QtCore>
 #include <QtGui>
 
+constexpr bool tracking = true;
+
 int main(int argc, char *argv[])
 {
    QApplication app(argc, argv);
@@ -27,9 +29,11 @@ int main(int argc, char *argv[])
    pb->setText("Close");
 
    QSlider* sl = new QSlider(Qt::Orientation::Horizontal);
-   sl->setTracking(false);
+   sl->setTracking(tracking);
 
    QProgressBar* progress = new QProgressBar();
+   progress->setMinimum(sl->minimum());
+   progress->setMaximum(sl->maximum());
 
    QHBoxLayout* layout = new QHBoxLayout(mainWindow);
    layout->addWidget(pb);
@@ -37,6 +41,7 @@ int main(int argc, char *argv[])
    layout->addWidget(progress);
 
    QObject::connect(pb, &QPushButton::clicked, mainWindow, &QWidget::close);
+   QObject::connect(sl, &QSlider::valueChanged, progress, &QProgressBar::setValue);
 
    mainWindow->show();
 
