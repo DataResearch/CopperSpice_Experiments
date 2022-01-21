@@ -7,6 +7,10 @@
 // only when the user releases the mouse button a single event will be processed.
 constexpr bool tracking = true;
 
+// if set to true, a percentage of completion value will be shown next to the progressbar
+// no text output if set to false
+constexpr bool show_percentage = false;
+
 int main(int argc, char *argv[]) {
 
    // a qapplication for our eventloop needs
@@ -30,14 +34,15 @@ int main(int argc, char *argv[]) {
    auto* progress = new QProgressBar();
    progress->setMinimum(slider->minimum());
    progress->setMaximum(slider->maximum());
-   progress->setTextVisible(false);
+   progress->setValue(slider->minimum()); // MAYBE_BUG: this is required to show the text?
+   progress->setTextVisible(show_percentage);
 
    // set the window layout for vertical layouting
    // - placing ui elements vertically underneath each other
    auto* layout = new QVBoxLayout(main_window);
    layout->addWidget(slider);
    layout->addWidget(progress);
-   layout->addStretch(0);
+   layout->addStretch();
 
    // connect the slider to the progressbar
    // sets the value from the slider to the value of the progressbar
