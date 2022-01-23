@@ -37,16 +37,23 @@ int main(int argc, char *argv[]) {
    progress->setValue(slider->minimum()); // MAYBE_BUG: this is required to show the text?
    progress->setTextVisible(show_percentage);
 
+   // create a label, to show the value used for the progressbar
+   auto* label = new QLabel();
+
    // set the window layout for vertical layouting
    // - placing ui elements vertically underneath each other
    auto* layout = new QVBoxLayout(main_window);
    layout->addWidget(slider);
    layout->addWidget(progress);
+   layout->addWidget(label);
    layout->addStretch();
 
    // connect the slider to the progressbar
    // sets the value from the slider to the value of the progressbar
    QObject::connect(slider, &QSlider::valueChanged, progress, &QProgressBar::setValue);
+
+   // set the value number to the label
+   QObject::connect(slider, &QSlider::valueChanged, label, [label](int a) {label->setNum(a);});
 
    // display the components on screen
    main_window->show();
