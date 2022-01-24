@@ -12,10 +12,9 @@ constexpr bool tracking = true;
 constexpr bool show_percentage = false;
 
 // handler event generator function; to not spam around long lambdas
-// uses currying to set all the parameters required
+// also reduce some code duplication
 auto produce_color_button_handler(QPalette::ColorRole group, QProgressBar* progress) {
    
-   // currying a lambda for the button handler
    return [group, progress]() {
 
       // aquire the old palette and color
@@ -39,6 +38,8 @@ auto produce_color_button_handler(QPalette::ColorRole group, QProgressBar* progr
          // the widget will automatically merge the palette
          // to get the final used palette
          progress->setPalette(new_palette);
+         progress->setForegroundRole(QPalette::Highlight);
+         progress->setBackgroundRole(QPalette::Base);
       }
    };
 
