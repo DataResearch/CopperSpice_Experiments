@@ -11,6 +11,39 @@ constexpr bool tracking = true;
 // no text output if set to false
 constexpr bool show_percentage = false;
 
+// handler event generator function; to not spam around long lambdas
+// uses currying to set all the parameters required
+auto produce_color_button_handler(QPalette::ColorRole group, QProgressBar* progress) {
+   
+   // currying a lambda for the button handler
+   return [group, progress]() {
+
+      // aquire the old palette and color
+      const auto& active_palette = progress->palette();
+      QColor previous = active_palette.color(group);
+
+      // let the user select a new color
+      // the preselected color will be the used color
+      // this allows minor adjustments w/o a lot of guesswork
+      // an screencapture to get the color code...
+      QColor color;
+      color = QColorDialog::getColor(previous);
+
+      // when the selected color is valid, we set it 
+      // as the new color, invalid if user cancelled the dialog
+      if (color.isValid()) {
+         // create a new palette
+         QPalette new_palette{};
+         new_palette.setColor(group, color);
+         // apply the new palette
+         // the widget will automatically merge the palette
+         // to get the final used palette
+         progress->setPalette(new_palette);
+      }
+   };
+
+}
+
 int main(int argc, char *argv[]) {
 
    // a qapplication for our eventloop needs
@@ -34,18 +67,30 @@ int main(int argc, char *argv[]) {
    auto* progress = new QProgressBar();
    progress->setMinimum(slider->minimum());
    progress->setMaximum(slider->maximum());
-   progress->setValue(slider->minimum()); // MAYBE_BUG: this is required to show the text?
+   progress->setValue(slider->minimum());
    progress->setTextVisible(show_percentage);
+
+   // construct a pair of buttons to set the color palette of a QProgressBar
+   // to test the dynamic styling abilities
+   auto* foreground_button = new QPushButton("Foreground Color");
+   auto* background_button = new QPushButton("Background Color");
 
    // create a label, to show the value used for the progressbar
    auto* label = new QLabel();
+   label->setNum(slider->minimum());
+
+   auto* toolbar_layout = new QHBoxLayout();
+   toolbar_layout->addWidget(foreground_button);
+   toolbar_layout->addWidget(background_button);
+   toolbar_layout->addWidget(label);
+   toolbar_layout->addStretch();
 
    // set the window layout for vertical layouting
    // - placing ui elements vertically underneath each other
    auto* layout = new QVBoxLayout(main_window);
    layout->addWidget(slider);
    layout->addWidget(progress);
-   layout->addWidget(label);
+   layout->addLayout(toolbar_layout);
    layout->addStretch();
 
    // connect the slider to the progressbar
@@ -54,6 +99,10 @@ int main(int argc, char *argv[]) {
 
    // set the value number to the label
    QObject::connect(slider, &QSlider::valueChanged, label, [label](int a) {label->setNum(a);});
+
+   // set the color when a button was clicked
+   QObject::connect(foreground_button, &QPushButton::clicked, progress, produce_color_button_handler(QPalette::Highlight, progress));
+   QObject::connect(background_button, &QPushButton::clicked, progress, produce_color_button_handler(QPalette::Base, progress));
 
    // display the components on screen
    main_window->show();
