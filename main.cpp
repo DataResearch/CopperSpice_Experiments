@@ -11,40 +11,6 @@ constexpr bool tracking = true;
 // no text output if set to false
 constexpr bool show_percentage = false;
 
-// handler event generator function; to not spam around long lambdas
-// also reduce some code duplication
-auto produce_color_button_handler(QPalette::ColorRole group, QProgressBar* progress) {
-   
-   return [group, progress]() {
-
-      // aquire the old palette and color
-      const auto& active_palette = progress->palette();
-      QColor previous = active_palette.color(group);
-
-      // let the user select a new color
-      // the preselected color will be the used color
-      // this allows minor adjustments w/o a lot of guesswork
-      // an screencapture to get the color code...
-      QColor color;
-      color = QColorDialog::getColor(previous);
-
-      // when the selected color is valid, we set it 
-      // as the new color, invalid if user cancelled the dialog
-      if (color.isValid()) {
-         // create a new palette
-         QPalette new_palette{};
-         new_palette.setColor(group, color);
-         // apply the new palette
-         // the widget will automatically merge the palette
-         // to get the final used palette
-         progress->setPalette(new_palette);
-         progress->setForegroundRole(QPalette::Highlight);
-         progress->setBackgroundRole(QPalette::Base);
-      }
-   };
-
-}
-
 int main(int argc, char *argv[]) {
 
    // a qapplication for our eventloop needs
@@ -71,19 +37,33 @@ int main(int argc, char *argv[]) {
    progress->setValue(slider->minimum());
    progress->setTextVisible(show_percentage);
 
-   // construct a pair of buttons to set the color palette of a QProgressBar
-   // to test the dynamic styling abilities
-   auto* foreground_button = new QPushButton("Foreground Color");
-   auto* background_button = new QPushButton("Background Color");
-
    // create a label, to show the value used for the progressbar
    auto* label = new QLabel();
    label->setNum(slider->minimum());
 
+   // a button that should close our application
+   auto* close_button = new QPushButton("Close");
+
+   // a button that reduces our value by 10
+   auto* backwards_button = new QPushButton("-10");
+
+   // a button that advances our value by 10
+   auto* forwards_button = new QPushButton("+10");
+
+      // a button that reduces our value by 1
+   auto* single_backwards_button = new QPushButton("-1");
+
+   // a button that advances our value by 1
+   auto* single_forwards_button = new QPushButton("+1");
+
+   // magic toolbar layouts
    auto* toolbar_layout = new QHBoxLayout();
-   toolbar_layout->addWidget(foreground_button);
-   toolbar_layout->addWidget(background_button);
    toolbar_layout->addWidget(label);
+   toolbar_layout->addWidget(close_button);
+   toolbar_layout->addWidget(backwards_button);
+   toolbar_layout->addWidget(forwards_button);
+   toolbar_layout->addWidget(single_backwards_button);
+   toolbar_layout->addWidget(single_forwards_button);
    toolbar_layout->addStretch();
 
    // set the window layout for vertical layouting
@@ -101,9 +81,32 @@ int main(int argc, char *argv[]) {
    // set the value number to the label
    QObject::connect(slider, &QSlider::valueChanged, label, [label](int a) {label->setNum(a);});
 
-   // set the color when a button was clicked
-   QObject::connect(foreground_button, &QPushButton::clicked, progress, produce_color_button_handler(QPalette::Highlight, progress));
-   QObject::connect(background_button, &QPushButton::clicked, progress, produce_color_button_handler(QPalette::Base, progress));
+   // close button
+   QObject::connect(close_button, &QPushButton::clicked, main_window, &QWidget::close);
+
+   // reduce value by 10 button event
+   QObject::connect(backwards_button, &QPushButton::clicked, slider, [slider]() {
+      const auto current_value = slider->value();
+      slider->setValue(current_value - 10);
+   });
+
+   // add value by 10 button event
+   QObject::connect(forwards_button, &QPushButton::clicked, slider, [slider]() {
+      const auto current_value = slider->value();
+      slider->setValue(current_value + 10);
+   });
+
+   // reduce value by 1 button event
+   QObject::connect(single_backwards_button, &QPushButton::clicked, slider, [slider]() {
+      const auto current_value = slider->value();
+      slider->setValue(current_value - 1);
+   });
+
+   // add value by 1 button event
+   QObject::connect(single_forwards_button, &QPushButton::clicked, slider, [slider]() {
+      const auto current_value = slider->value();
+      slider->setValue(current_value + 1);
+   });
 
    // display the components on screen
    main_window->show();
