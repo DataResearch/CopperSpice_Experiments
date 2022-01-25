@@ -50,7 +50,7 @@ int main(int argc, char *argv[]) {
    // a button that advances our value by 10
    auto* forwards_button = new QPushButton("+10");
 
-      // a button that reduces our value by 1
+   // a button that reduces our value by 1
    auto* single_backwards_button = new QPushButton("-1");
 
    // a button that advances our value by 1
